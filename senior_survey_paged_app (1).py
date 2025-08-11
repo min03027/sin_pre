@@ -14,6 +14,50 @@ st.set_page_config(page_title="시니어 금융 설문 & 추천", page_icon="�
 # 실행 파일 기준 경로 (Streamlit/로컬 모두 안전)
 BASE_DIR = os.getcwd()
 MODELS_DIR = BASE_DIR          # 모델/인덱스/CSV 모두 같은 폴더라고 가정
+import os, glob, unicodedata, pandas as pd
+
+def _listdir_top():
+    try:
+        return sorted(os.listdir(os.getcwd()))[:100]
+    except Exception:
+        return []
+
+st.write("📍 CWD:", os.getcwd())
+st.write("📂 여기 있는 파일들(일부):", _listdir_top())
+
+# 기대 파일명
+TARGET = "금융상품_3개_통합본.csv"
+
+def find_products_csv(target_name=TARGET):
+    # 한글 정규화 이슈 대비
+    tnorm = unicodedata.normalize("NFC", target_name)
+    # 1) 현재 폴더 우선
+    for p in os.listdir(os.getcwd()):
+        if unicodedata.normalize("NFC", p) == tnorm:
+            return os.path.join(os.getcwd(), p)
+    # 2) 서브폴더까지 스캔
+    for p in glob.glob("**/*.csv", recursive=True):
+        name = os.path.basename(p)
+        if unicodedata.normalize("NFC", name) == tnorm:
+            return p
+    # 3) 완화된 매칭
+    for p in glob.glob("**/*.csv", recursive=True):
+        if "금융상품" in p and "통합본" in p:
+            return p
+    return None
+
+csv_path = find_products_csv()
+if csv_path:
+    st.success(f"CSV 찾음: {csv_path}")
+    try:
+        raw_products = pd.read_csv(csv_path, encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        raw_products = pd.read_csv(csv_path, encoding="cp949")
+else:
+    st.error("CSV를 레포에서 찾지 못했습니다. (레포/브랜치/메인 파일 경로 확인 필요)")
+    st.stop()
+
+
 PRODUCTS_CSV = "금융상품_3개_통합본.csv"
 
 # =================================
