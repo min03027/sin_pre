@@ -12,7 +12,7 @@ import faiss
 st.set_page_config(page_title="시니어 금융 설문 & 추천", page_icon="💸", layout="centered")
 
 # 실행 파일 기준 경로 (Streamlit/로컬 모두 안전)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.getcwd()
+BASE_DIR = os.getcwd()
 MODELS_DIR = BASE_DIR          # 모델/인덱스/CSV 모두 같은 폴더라고 가정
 PRODUCTS_CSV = "금융상품_3개_통합본.csv"
 
